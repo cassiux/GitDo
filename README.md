@@ -1,4 +1,4 @@
-GitCool
+GitDo
 =======
 
-GitCool is a tool to help newbies to use GitHub
+GitDo is a tool to help newbies to use GitHub

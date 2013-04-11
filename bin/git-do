@@ -36,9 +36,8 @@ function growl(){
 # GitDo Functions
 
 function create-repo() {
-    $openGrowl
     gitURLuser=$(curl https://api.github.com/legacy/user/email/$gituser 2> /dev/null | grep login | cut -d \" -f4)
-    curl -u ''$gituser'':''$gitpwd'' https://api.github.com/user/repos -d '{"name":"'${PWD##*/}'"}'
+    curl -u ''$gituser'':''$gitpwd'' https://api.github.com/user/repos -d '{"name":"'${PWD##*/}'"}' >/dev/null 2>&1
     git init
     echo
     growlnotify --name 'GitDo' --message 'command: git init' --title ${PWD##*/} 'is your new repository'

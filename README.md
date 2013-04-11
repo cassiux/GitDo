@@ -22,6 +22,8 @@ The GitDo commands are:
 
 `help` - List all available commands. 
 
+`growl` - Check if Growl is running, if not start the application.
+
 `create-repo` - Create remote Repository on Github and setup workflow.          
 
 `create-branch`- Create local Branch and move into itself.

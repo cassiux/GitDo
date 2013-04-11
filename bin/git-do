@@ -21,23 +21,36 @@ RESET=$(tput sgr0)
 gituser=$(git config --get-all github.login)
 gitpwd=$(git config --get-all github.password)
 
+#Growl Functions
+
+function growl(){
+  if  ps aux | grep "[g]rowlnotify" 2> /dev/null
+  then
+      echo "Growl is already running."
+  else
+      open -a growl
+      echo "Growl is now started."
+  fi
+}
+
 # GitDo Functions
 
 function create-repo() {
+    $openGrowl
     gitURLuser=$(curl https://api.github.com/legacy/user/email/$gituser 2> /dev/null | grep login | cut -d \" -f4)
     curl -u ''$gituser'':''$gitpwd'' https://api.github.com/user/repos -d '{"name":"'${PWD##*/}'"}'
     git init
     echo
-    growlnotify --message 'command: git init' --title ${PWD##*/} 'is your new repository'
+    growlnotify --name 'GitDo' --message 'command: git init' --title ${PWD##*/} 'is your new repository'
     touch README.md
-    growlnotify --message 'in your "'${PWD##*/}'" repository' --title 'Create a file called "README"'
+    growlnotify --name 'GitDo' --message 'in your "'${PWD##*/}'" repository' --title 'Create a file called "README"'
     git add README.md
     git commit -m "first commit"
-    growlnotify --message 'command: git commit -m' --title 'Commit your "README" file'
+    growlnotify --name 'GitDo' --message 'command: git commit -m' --title 'Commit your "README" file'
     git remote add origin git@github.com:$gitURLuser/${PWD##*/}.git
-    growlnotify --message 'command: git remote add origin' --title 'Add a new remote repository'
+    growlnotify --name 'GitDo' --message 'command: git remote add origin' --title 'Add a new remote repository'
     git push -u origin master
-    growlnotify --message 'command: git push -u origin master' --title 'Sends your commits in the "master" branch to GitHub'
+    growlnotify --name 'GitDo' --message 'command: git push -u origin master' --title 'Sends your commits in the "master" branch to GitHub'
     echo
     echo "What happened?"
     echo
@@ -91,7 +104,7 @@ function create-branch() {
   fi
 
   git checkout -b "$branch"
-  growlnotify --message 'command: git checkout -b' --title ${branch} 'is your new BRANCH'
+  growlnotify --name 'GitDo' --message 'command: git checkout -b' --title ${branch} 'is your new BRANCH'
   echo
   echo "What happened?"
   echo
@@ -122,9 +135,9 @@ function delete-branch() {
   fi
 
   git checkout master
-  growlnotify --message 'command: git checkout master' --title 'Switch to Master branch'
+  growlnotify --name 'GitDo' --message 'command: git checkout master' --title 'Switch to Master branch'
   git branch -d $deletebranch
-  growlnotify --message 'command: git branch -d' --title 'Delete local branch' ${deletebranch}
+  growlnotify --name 'GitDo' --message 'command: git branch -d' --title 'Delete local branch' ${deletebranch}
   echo
   echo "What happened?"
   echo
@@ -156,7 +169,7 @@ function share() {
   fi
 
   git push origin $sharebranch
-  growlnotify --message 'command: git branch -d' --title ${sharebranch} 'is now a remote branch'
+  growlnotify --name 'GitDo' --message 'command: git branch -d' --title ${sharebranch} 'is now a remote branch'
   echo
   echo "What happened?"
   echo
@@ -182,7 +195,7 @@ function unshare() {
   fi
 
   git push origin :$unsharebranch
-  growlnotify --message 'command: git push origin :$unsharebranch' --title ${unsharebranch} 'remote branch has been deleted'
+  growlnotify --name 'GitDo' --message 'command: git push origin :$unsharebranch' --title ${unsharebranch} 'remote branch has been deleted'
   echo
   echo "What happened?"
   echo
@@ -201,7 +214,7 @@ function publish() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
   gituserURL=$(git remote -v | grep fetch | head -n 1 | cut -f 2 | cut -d ":" -f 2 | cut -d "/" -f 1)
   open https://github.com/$gituserURL/${PWD##*/}/pull/new/$current_branch
-  growlnotify --message 'https://github.com/'$gituserURL'/'${PWD##*/}'/pull/new/'$current_branch --title 'New Pull Request'
+  growlnotify --name 'GitDo' --message 'https://github.com/'$gituserURL'/'${PWD##*/}'/pull/new/'$current_branch --title 'New Pull Request'
   echo
   echo "What happened?"
   echo
@@ -219,6 +232,7 @@ function help() {
   echo
   echo "The GitDo commands are:"
   echo
+  echo "  ${BOLD}growl${RESET}                Check if Growl is running, if not start it."
   echo "  ${BOLD}create-repo${RESET}          Create remote Repository on Github and setup workflow."
   echo "  ${BOLD}create-branch${RESET}        Create local Branch and move into itself."
   echo "  ${BOLD}delete-branch${RESET}        Delete local Branch and switch to master."

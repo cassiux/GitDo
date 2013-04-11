@@ -231,7 +231,7 @@ function help() {
   echo
   echo "The GitDo commands are:"
   echo
-  echo "  ${BOLD}growl${RESET}                Check if Growl is running, if not start it."
+  echo "  ${BOLD}growl${RESET}                Check if Growl is running, if not start the application."
   echo "  ${BOLD}create-repo${RESET}          Create remote Repository on Github and setup workflow."
   echo "  ${BOLD}create-branch${RESET}        Create local Branch and move into itself."
   echo "  ${BOLD}delete-branch${RESET}        Delete local Branch and switch to master."

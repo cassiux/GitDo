@@ -1,0 +1,248 @@
+#!/bin/bash
+#
+# git-do
+#
+# Cassio Lupifieri
+# GitDo is a tool to help newbies to use GitHub
+#
+# This project was made during the SUSE Hackweek 9 - 2013
+#
+# Project repository: https://github.com/cassiolupifieri/GitDo
+
+#OUTPUT COLOR
+
+COLOR=$(tput setaf 2)
+RED=$(tput setaf 1)
+BOLD=$(tput bold)
+RESET=$(tput sgr0)
+
+#Github account info
+
+gituser=$(git config --get-all github.login)
+gitpwd=$(git config --get-all github.password)
+
+# GitDo Functions
+
+function create-repo() {
+    gitURLuser=$(curl https://api.github.com/legacy/user/email/$gituser 2> /dev/null | grep login | cut -d \" -f4)
+    curl -u ''$gituser'':''$gitpwd'' https://api.github.com/user/repos -d '{"name":"'${PWD##*/}'"}'
+    git init
+    echo
+    growlnotify --message 'command: git init' --title ${PWD##*/} 'is your new repository'
+    touch README.md
+    growlnotify --message 'in your "'${PWD##*/}'" repository' --title 'Create a file called "README"'
+    git add README.md
+    git commit -m "first commit"
+    growlnotify --message 'command: git commit -m' --title 'Commit your "README" file'
+    git remote add origin git@github.com:$gitURLuser/${PWD##*/}.git
+    growlnotify --message 'command: git remote add origin' --title 'Add a new remote repository'
+    git push -u origin master
+    growlnotify --message 'command: git push -u origin master' --title 'Sends your commits in the "master" branch to GitHub'
+    echo
+    echo "What happened?"
+    echo
+    echo " You have used the following commands:"
+    echo
+    echo "   ${COLOR}git init${RESET}"
+    echo
+    echo " This command creates an empty repository in the current directory ${BOLD}/${PWD##*/}${RESET}."
+    echo " For every project that you want to track using git, go to its base folder and"
+    echo " issue this command first, now you might want edit your README which was just created."
+    echo
+    echo "   ${COLOR}touch README${RESET}"
+    echo
+    echo " Creates a file called README in your ${BOLD}/${PWD##*/}${RESET} directory."
+    echo
+    echo "   ${COLOR}git commit -m 'first commit'${RESET}"
+    echo
+    echo " Commits your files, adding the message 'first commit'."
+    echo
+    echo "   ${COLOR}git remote add origin git@github.com:$name/${PWD##*/}.git${RESET}"
+    echo
+    echo " Start a new remote repository."
+    echo
+    echo "   ${COLOR}git push -u origin master${RESET}"
+    echo
+    echo " Sends your commits in the 'master' branch to GitHub."
+    echo
+    echo "Your new remote git repository is at:"
+    echo
+    echo "   ${COLOR}https://www.github.com/$name/${PWD##*/}${RESET}"
+    echo
+    echo "and your local git repository is:"
+    echo
+    echo "   ${COLOR}${PWD}${RESET}"
+    echo
+    echo "Now if you look at your repository on GitHub, you will see your new REPOSITORY has been added to it."
+    echo
+    echo "${BOLD}Your repository is ready to work, enjoy!${RESET}"
+    echo
+}
+
+function create-branch() {
+  branch="$(osascript -e 'Tell application "System Events" to display dialog "Enter your new BRANCH name:" default answer ""' -e 'text returned of result' 2>/dev/null)"
+  if [ $? -ne 0 ]; then
+      # The user pressed Cancel
+      exit 1 # exit with an error status
+  elif [ -z "$branch" ]; then
+      # The user left the project name blank
+      osascript -e 'Tell application "System Events" to display alert "You must enter a BRANCH name; cancelling..." as warning'
+      exit 1 # exit with an error status
+  fi
+
+  git checkout -b "$branch"
+  growlnotify --message 'command: git checkout -b' --title ${branch} 'is your new BRANCH'
+  echo
+  echo "What happened?"
+  echo
+  echo " You have used the following command:"
+  echo
+  echo "   ${COLOR}git checkout -b '"$branch"'${RESET}"
+  echo
+  echo " This command creates a new branch, in this case ${BOLD}${branch}${RESET},"
+  echo " and set ${BOLD}${branch}${RESET} as your current branch workspace."
+  echo
+  echo "Now your current branch is:"
+  echo
+  echo "   ${COLOR}${branch}${RESET}"
+  echo
+  echo "${BOLD}You can now work in your new branch!${RESET}"
+  echo
+} 
+
+function delete-branch() {
+  deletebranch="$(osascript -e 'Tell application "System Events" to display dialog "Enter the BRANCH name to delete:" default answer ""' -e 'text returned of result' 2>/dev/null)"
+  if [ $? -ne 0 ]; then
+      # The user pressed Cancel
+      exit 1 # exit with an error status
+  elif [ -z "$deletebranch" ]; then
+      # The user left the project name blank
+      osascript -e 'Tell application "System Events" to display alert "You must enter a BRANCH name; cancelling..." as warning'
+      exit 1 # exit with an error status
+  fi
+
+  git checkout master
+  growlnotify --message 'command: git checkout master' --title 'Switch to Master branch'
+  git branch -d $deletebranch
+  growlnotify --message 'command: git branch -d' --title 'Delete local branch' ${deletebranch}
+  echo
+  echo "What happened?"
+  echo
+  echo " You have used the following commands:"
+  echo
+  echo "   ${COLOR}git checkout master${RESET}"
+  echo
+  echo " This command switch to your master branch, you can't delete branch inside itself."
+  echo
+  echo "   ${COLOR}git branch -d '"$deletebranch"'${RESET}"
+  echo
+  echo " This command deletes a local branch, in this case ${BOLD}${deletebranch}${RESET}."
+  echo
+  echo "Now your current branch is:"
+  echo
+  echo "   ${COLOR}Master${RESET}"
+  echo
+}
+
+function share() {
+  sharebranch="$(osascript -e 'Tell application "System Events" to display dialog "Enter the BRANCH name to share on Github:" default answer ""' -e 'text returned of result' 2>/dev/null)"
+  if [ $? -ne 0 ]; then
+      # The user pressed Cancel
+      exit 1 # exit 
+  elif [ -z "$sharebranch" ]; then
+      # The user left the BRANCH name blank
+      osascript -e 'Tell application "System Events" to display alert "You must enter a BRANCH name; cancelling..." as warning'
+      exit 1 # exit
+  fi
+
+  git push origin $sharebranch
+  growlnotify --message 'command: git branch -d' --title ${sharebranch} 'is now a remote branch'
+  echo
+  echo "What happened?"
+  echo
+  echo " You have used the following commands:"
+  echo
+  echo "   ${COLOR}git push origin $sharebranch${RESET}"
+  echo
+  echo " Where origin is your remote name and ${BOLD}${sharebranch}${RESET} is the name of the branch you want to push up."
+  echo
+  echo "Now your ${BOLD}${sharebranch}${RESET} branch is available remoteley."
+  echo
+}
+
+function unshare() {
+  unsharebranch="$(osascript -e 'Tell application "System Events" to display dialog "Enter the BRANCH name to unshare on Github:" default answer ""' -e 'text returned of result' 2>/dev/null)"
+  if [ $? -ne 0 ]; then
+      # The user pressed Cancel
+      exit 1 # exit
+  elif [ -z "$unsharebranch" ]; then
+      # The user left the BRANCH name blank
+      osascript -e 'Tell application "System Events" to display alert "You must enter a BRANCH name; cancelling..." as warning'
+      exit 1 # exit 
+  fi
+
+  git push origin :$unsharebranch
+  growlnotify --message 'command: git push origin :$unsharebranch' --title ${unsharebranch} 'remote branch has been deleted'
+  echo
+  echo "What happened?"
+  echo
+  echo " You have used the following commands:"
+  echo
+  echo "   ${COLOR}git push origin :$unsharebranch${RESET}"
+  echo
+  echo " That will delete the ${BOLD}${unsharebranch}${RESET} branch on the origin remote,"
+  echo " but you’ll still need to delete the branch locally with git do delete-branch."
+  echo
+  echo "${BOLD}${unsharebranch}${RESET} branch has been remoteley deleted."
+  echo
+}
+
+function publish() {
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
+  gituserURL=$(git remote -v | grep fetch | head -n 1 | cut -f 2 | cut -d ":" -f 2 | cut -d "/" -f 1)
+  open https://github.com/$gituserURL/${PWD##*/}/pull/new/$current_branch
+  growlnotify --message 'https://github.com/'$gituserURL'/'${PWD##*/}'/pull/new/'$current_branch --title 'New Pull Request'
+  echo
+  echo "What happened?"
+  echo
+  echo " This command open you default web browser to create a Pull Request on Gihub."
+  echo
+}
+
+# HELP Content
+
+function help() {
+  echo
+  echo "Usage:"
+  echo
+  echo "  ${COLOR}git do <command>${RESET}"
+  echo
+  echo "The GitDo commands are:"
+  echo
+  echo "  ${BOLD}create-repo${RESET}          Create remote Repository on Github and setup workflow."
+  echo "  ${BOLD}create-branch${RESET}        Create local Branch and move into itself."
+  echo "  ${BOLD}delete-branch${RESET}        Delete local Branch and switch to master."
+  echo "  ${BOLD}share${RESET}                Make your local Branch available remoteley."
+  echo "  ${BOLD}unshare${RESET}              Delete your remote Branch."
+  echo "  ${BOLD}publish${RESET}              Create Pull Request direct on Gihub website."
+  echo
+}
+
+# Parser the command options
+
+for parameter in $*
+do
+  if type $parameter 2> /dev/null | grep -q 'is a function'; then
+  	$parameter
+  else 
+  	echo "$parameter doesn't exist"
+  fi
+
+done
+
+# If there is no option suggest to read HELP
+
+if [ $# -eq 0 ]
+  then
+    echo "${RED}There is no option in your request, use <git cool help> to list available commands${RESET}"
+fi

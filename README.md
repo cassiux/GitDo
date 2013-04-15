@@ -30,7 +30,7 @@ The GitDo commands are:
 
 `delete-branch` - Delete local Branch and switch to master.
 
-`share` - Make your local Branch available remoteley.
+`share` - Make your local Branch available remotely.
 
 `unshare` - Delete your remote Branch.
 
